@@ -143,7 +143,7 @@ final class StructBuilder extends ClassSourceBuilder implements OutputFactory.Bu
             int dims = Utils.dimensions(varTree.type()).size();
             if (dims > 0) {
                 emitDimensionsFieldDecl(varTree, javaName);
-                String arrayHandle = emitArrayElementHandle(javaName, varTree, layoutField, dims);
+                String arrayHandle = emitArrayElementHandle(javaName, varTree, dims);
                 IndexList indexList = IndexList.of(dims);
                 emitFieldArrayGetter(javaName, varTree, arrayHandle, indexList);
                 emitFieldArraySetter(javaName, varTree, arrayHandle, indexList);
@@ -232,20 +232,22 @@ final class StructBuilder extends ClassSourceBuilder implements OutputFactory.Bu
             """, javaName, segmentParam, valueParam, offsetField, layoutField);
     }
 
-    private String emitArrayElementHandle(String javaName, Declaration.Variable varTree, String fieldLayoutName, int dims) {
+    private String emitArrayElementHandle(String javaName, Declaration.Variable varTree, int dims) {
         String arrayHandleName = String.format("%1$s$ELEM_HANDLE", javaName);
-        String path = IntStream.range(0, dims)
+        String groupPath = fieldElementPaths(varTree.name());
+        String sequencePath = IntStream.range(0, dims)
                 .mapToObj(_ -> "sequenceElement()")
                 .collect(Collectors.joining(", "));
+        String fullPath = groupPath + ", " + sequencePath;
         Type elemType = Utils.typeOrElemType(varTree.type());
         if (Utils.isStructOrUnion(elemType)) {
             appendIndentedLines("""
-                private static final MethodHandle %1$s = %2$s.sliceHandle(%3$s);
-                """, arrayHandleName, fieldLayoutName, path);
+                private static final MethodHandle %1$s = $LAYOUT.sliceHandle(%2$s);
+                """, arrayHandleName, fullPath);
         } else {
             appendIndentedLines("""
-                private static final VarHandle %1$s = %2$s.varHandle(%3$s);
-                """, arrayHandleName, fieldLayoutName, path);
+                private static final VarHandle %1$s = $LAYOUT.varHandle(%2$s);
+                """, arrayHandleName, fullPath);
         }
         return arrayHandleName;
     }
