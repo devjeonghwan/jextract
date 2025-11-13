@@ -28,6 +28,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
 import test.jextract.testStructArrayFields.*;
+import static test.jextract.testStructArrayFields.testStructArrayFields_h.*;
 
 /*
  * @test
@@ -122,8 +123,8 @@ public class TestStructArrayFields {
         assertTrue(offU < offTail);
         assertTrue(offTail < offFlag);
 
-        assertEquals(3L * Integer.BYTES, Record_st.arr$layout().byteSize());
-        assertEquals(3L * Integer.BYTES, InnerU.ua$layout().byteSize());
+        assertEquals(C_INT.byteSize() * 3L, Record_st.arr$layout().byteSize());
+        assertEquals(C_INT.byteSize() * 3L, InnerU.ua$layout().byteSize());
     }
 
     @Test
